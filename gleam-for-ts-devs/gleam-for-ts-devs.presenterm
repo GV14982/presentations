@@ -1,0 +1,623 @@
+---
+theme:
+    name: catppuccin-macchiato
+---
+```bash +exec_replace +no_background
+figlet -f starwars Gleam | lolcat -f -S 69
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' '—' | lolcat -f -S 666
+```
+<!--font_size: 4-->
+<!--column_layout: [2, 5, 2]-->
+<!--column: 0-->
+<!--new_lines: 3-->
+![](lucy.png)
+<!--column: 1-->
+```bash +exec_replace +no_background
+figlet -w 45 -c -f small 'For Typescript Developers' | lolcat -f -S 420
+```
+<!--column: 2-->
+<!--new_lines: 3-->
+![](lucyhappy.png)
+<!--end_slide-->
+Introduction
+---
+
+# Who even is this guy?
+<!--column_layout: [3, 2]-->
+<!--column: 0-->
+<!--pause-->
+<!-- speaker_note: Talk about my experience and cat -->
+- Software Engineer @iHeart
+- Keyboard and ergonomics enthusiast
+- Die hard terminal fanboy
+- Loves typesystems and statically typed languages (Yes... Even Typescript)
+<!--pause-->
+<!--column: 1-->
+Here is me with me cat, Fritzy =3
+![image:w:100%](photo.jpg)
+<!--end_slide-->
+What is Gleam?
+---
+<!--speaker_note: Give an anecdote on how I came to find Gleam while researching simpler functional languages-->
+From [gleam.run](https://gleam.run/):
+> Gleam is a friendly language for building type-safe systems that scale!
+
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+<!--pause-->
+# Power of Functional Programming
+
+Gleam is a purely functional language. Immutable data, powerful type system, simple syntax combine to give a developer experience that sparks joy.
+<!--pause-->
+# Batteries Included
+
+Gleam comes with many great built in tools to handle all stages of development.
+
+- Language Server
+- Formatter
+- Editor Integrations
+- Package Manager
+<!--pause-->
+# Helpful Error Messages
+
+The Gleam compiler aims to assist you with any errors. Gone are the days of the cryptic 10 page long Typescript errors.
+<!--column: 1-->
+<!--pause-->
+# Flexible Runtime
+
+You can compile Gleam for one of two targets:
+<!--pause-->
+- `Erlang`
+  - Leveraging the power of the BEAM VM, the Erlang target can make use of the `Open Telephony Protocol` (or `OTP`) to handle massivly concurrent systems that fail gracefully.
+<!--pause-->
+- `Javascript`
+  - For when you want to run your Gleam code inside a browser, or even interop with JS/TS packages. The Gleam compiler will even generate Typescript type definitions for your code.
+<!--end_slide-->
+Functional Programming 101
+---
+<!--speaker_note: This is a simplification but covers the broad strokes -->
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+<!--pause-->
+# Declarative Design
+
+Functional languages are `declarative`. They aim to describe _what_ should happen, not necisarrily _how_ that happens[1].
+<!--pause-->
+# Composition and Higher Order Functions
+
+In a functional language, functions can take other functions as parameters. As such, your logic is a series of compositions of functions, rather than lists of instructions.
+<!--column: 1-->
+<!--pause-->
+# Immutable Data
+
+Bindings in functional languages are `immutable`. This is just a _fancy_ way of saying their data cannot change.
+<!--pause-->
+# Pure Functions
+
+Functions cannot have `side effects`[2]. Meaning for any given `input` a function will always return the same `output`.
+<!--reset_layout-->
+<!--pause-->
+1. There is definitely overlap here, especially in _multi-paradigm_ languages, such as Typescript.
+2. Modern functional programs have mechanisms to interact with side effects but that's a little out of scope here.
+<!--end_slide-->
+Modules
+---
+<!--speaker_note: I really enjoy Gleam's module system for its predictability and simplicity.-->
+<!--speaker_note: It makes really convoluted directory structures kind of hard to make.-->
+Gleam code is split into _modules_. Each module is comprised of functions, types, constants, etc. Each module relates to a specific file in the `src` directory of a gleam project. For instance, let's say you have file called `world.gleam` inside of a directory called `hello/` in your `src` directory.
+<!--new_lines: 2-->
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+<!--pause-->
+When writing definitions you can use the `pub` keyword to specify what you want to be available in other modules. Definitions not prefixed with `pub` are only available from within that module.
+<!--column: 1-->
+```gleam
+// Will be available outside of this module
+pub fn my_function() {
+    todo
+}
+
+// Only available within this module
+fn module_function() {
+    todo
+}
+```
+<!--pause-->
+<!--column: 0-->
+This would be similar to the following Typescript
+
+```typescript
+export function my_function() {
+    //...
+}
+
+function module_function() {
+    //...
+}
+```
+<!--end_slide-->
+Imports
+---
+<!--pause-->
+To import a module you would use the `import` keyword inside of _another_ module.
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+`Gleam`
+
+```gleam
+import hello/world
+```
+<!--column: 1-->
+`Typescript`
+
+```typescript
+import world from "hello/world"
+```
+<!--reset_layout-->
+<!--pause-->
+You can also alias your imports using the `as` keyword if you want to use a different name.
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+`Gleam`
+
+```gleam
+import hello/world as wrld
+```
+<!--column: 1-->
+`Typescript`
+
+```typescript
+import wrld from "hello/world"
+```
+<!--reset_layout-->
+<!--pause-->
+Alternatively you can import specific parts of a module using `unqualified imports` using the `.{name}` syntax.
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+`Gleam`
+
+```gleam
+import hello/world.{my_function}
+```
+<!--column: 1-->
+`Typescript`
+
+```typescript
+import {my_function} from "hello/world"
+```
+<!--reset_layout-->
+<!--end_slide-->
+Values and Assignments
+---
+<!--speaker_note: The Gleam website actually calls them variables, but they aren't variable!!-->
+<!--speaker_note: I really love that they enforce code style standards. It just makes it much easier to enter a new coebase-->
+In Gleam the concept of _variables_ doesn't really exist, as values are immutable. However, you can still assign values to identifiers for easy reuse within your functions:
+
+```gleam
+let a = 4
+```
+<!--pause-->
+Identifiers in Gleam are written using _snake_case_. So where in Typescript it is entirely up to the developers (And people seem to generally prefer _camelCase_ or _PascalCase_), this name convention is **enforced** by the Gleam compiler.
+
+```gleam
+// Invalid, will get a compiler error
+let helloWorld = "Hello, World!"
+// Correct
+let hello_world = "Hello, World!"
+```
+<!--pause-->
+Like Typescript, type annotations are also _optional_ in Gleam:
+
+```gleam
+let a = "a"
+// is the same as
+let a: String = "a"
+```
+<!--end_slide-->
+Functions
+---
+<!--speaker_note: functions are love, functions are life-->
+<!--speaker_note: I do wish they incorporated arrow functions for anonymous functions, but I get why they didn't-->
+Functions are the core of Gleam programs. You use the `fn` keyword to define a function in Gleam. Unlike in Typescript, type annotations on function parameters are _optional_ in Gleam. This is because the type system is able to look at _how_ the parameters are used to infer their types. However, it is still considered good practice to include type parameters on functions. You use the `->` syntax to specify a return type:
+
+```gleam
+fn double(a: Int) -> Int {
+    a * 2
+}
+// Is the same as
+fn double(a) {
+    a * 2
+}
+```
+
+Another thing to notice is that Gleam uses _implicit returns_. Whatever the last expression in a block is will be returned.
+
+<!--pause-->
+Gleam also has `anonymous functions`. These are very helpful when you are passing a function into another function as a value:
+
+```gleam
+higher_order_function(fn(x) {x + 1})
+```
+<!--end_slide-->
+Pipelines and Function Captures
+---
+<!--speaker_note: I know JS has a pipeline operator proposal.-->
+<!--speaker_note: That would be a really great option for improving functional programming in Typescript-->
+One of the most powerful features of functional languages is the ability to create `pipelines` of functions, where the output of the previous function becomes the input for the next. Gleam uses the `|>` operator for this. For example, if we wanted to create a pipeline that used a `double` function into a `sqrt` function:
+
+```gleam
+let doubled_sqrt = double(4) |> sqrt
+// The same as sqrt(double(4))
+```
+<!--pause-->
+When you combine this with `function captures` which allow you to take a function, give it some arguments, and get back another function that takes a subset of arguments that you can call later. For instance, let's say we had a `pow(num, power)` function that raises a number to a power. We could use a function capture to turn that into a `cube` function to reuse later:
+
+```gleam
+let cube = pow(_, 3)
+let two_cubed = cube(2) // Same as pow(2, 3)
+let five_cubed = cube(5) // Same as pow(5, 3)
+```
+<!--end_slide-->
+Flow Control
+---
+
+Handling branching conditions is vital for software. In Typescript you would use features like `if/else` or `switch` statements. In Gleam you get a supercharged version of `switch` statements called **Pattern Matching**. You use the `case` keyword to create a pattern match, and inside you must handle all possible branches.
+
+```gleam
+fn is_a_or_z(str: String) -> Bool {
+    case str {
+        "a" | "z" -> True
+        _ -> False
+    }
+}
+```
+<!--pause-->
+In typescript this might look something like:
+
+```typescript
+function is_a_or_z(str: string): boolean {
+    if (str === "a" || str === "z") {
+        return true;
+    }
+    return false;
+}
+```
+<!--end_slide-->
+Recursion
+---
+<!--speaker_note: Mention tailcall recursion-->
+Gleam also doesn't include `loops` as there is no way to modify values to handle looping conditions. As such we use `recursion`. This is simply a functional calling itself until a _base case_ is met. For instance if we wanted to loop through all the numbers from 0-5 and print them in Typescript you might do:
+
+```typescript
+function printTilFive() {
+    for(let i = 0; i <= 5; i++) {
+        console.log(i)
+    }
+}
+```
+<!--pause-->
+In Gleam you would _need_ to use recursion for this:
+
+```gleam
+fn print_til_five(val: Int) -> Nil {
+    case val {
+        val if val <= 5 && val >= 0 -> {
+            echo val
+            print_til_five(val + 1)
+        }
+        _ -> Nil
+    }
+}
+```
+<!--end_slide-->
+Simple Types
+---
+
+Gleam ships with a number of "simple" types. These include:
+
+- `String`
+- `Int`
+- `Float`
+- `Bool`
+
+<!--pause-->
+This is pretty similar to Typescript, except that instead of a unified `number` type, our numbers are split into the `Int` and `Float` types. This can be simplified down to whole numbers vs rational numbers.
+
+<!--pause-->
+Each of these primitive types also has their own `module` included in the standard library (or `stdlib`). These give you all of the utility functions that might exist on the prototype for the value, like in Typescript.
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+```gleam
+import gleam/string
+let str = "the quick brown fox jumped over the lazy dog"
+let words = str |> string.split(" ")
+```
+<!--column: 1-->
+```typescript
+let str = "the quick brown fox jumped over the lazy dog"
+let words = str.split(" ")
+```
+<!--end_slide-->
+Type parameters
+---
+<!--speaker_note: generics are awesome, and I think the Gleam way of handling them is pretty nice-->
+<!--speaker_note: however, not being able to constrain the generic is kinda annoying-->
+<!--speaker_note: but it also makes code a bit simpler and easier to reason about-->
+-->
+Just like in Typescript, Gleam supports type parameters, aka `generics`. They are specified using `()` after a type that accepts generics.
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+# Typescript
+
+```typescript
+type MyList<T> = T[]
+```
+<!--column: 1-->
+## Gleam
+
+```gleam
+type MyList(T) = List(T)
+```
+<!--reset_layout-->
+<!--pause-->
+Unlike in Typescript, the Gleam compiler is smart enough to know when a type in a function declaration is a type parameter without any special syntax
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+# Typescript
+
+```typescript
+function generic<T>(t: T) {
+    //...
+}
+```
+<!--column: 1-->
+## Gleam
+
+```gleam
+fn generic(t: T) {
+    //...
+}
+```
+<!--reset_layout-->
+<!--end_slide-->
+List Type
+---
+
+Lists are basically Typescript arrays. They use a very similar syntax as well. However, in Gleam all elements of the list must be the same type and you cannot index into a `List` type directly (since they are implemented with linked lists).
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+# Typescript
+
+```typescript
+let arr = ["a", "b", "c"]
+```
+<!--column: 1-->
+## Gleam
+
+```gleam
+let arr = ["a", "b", "c"]
+```
+<!--reset_layout-->
+<!--pause-->
+Due to Gleam's declarative nature, some things you may be used to with arrays aren't really possible, or aren't quite as straightforward. For instance, indexing into a `List` in Gleam runs in _O(n)_ time, because it has to traverse the linked list.
+
+<!--pause-->
+Another example is _appending_ to the end of a list. This would require a **full** traversal of the List, so it is recommended to _prepend_ to the beginning of the list using the `[item, ..list]` syntax.
+<!--reset_layout-->
+<!--end_slide-->
+Tuple Type
+---
+
+Tuples work similarly to tuples in Typescript, but they are their own data type in Gleam. In Typescript they are implemented using arrays. The Typescript compiler doesn't infer tuples very well (With the exception of using the `const` type assertion).
+
+<!--pause-->
+You can use `#(...)` to instantiate a tuple in Gleam. You can also destructure the contents of a tuple similar to in Typescript.
+<!--column_layout: [3, 2]-->
+<!--column: 0-->
+# Typescript
+
+```typescript
+// type: string[]
+let notTup = ["a", "b", "c"]
+// type: [string, string, string]
+let tup: [string, string, string] = ["a", "b", "c"];
+// type: ["a", "b", "c"]
+let constTup = ["a", "b", "c"] as const;
+// Destructure any number of tuple members
+let [a, _, c] = tup;
+```
+<!--column: 1-->
+## Gleam
+
+```gleam
+let tup = #("a", "b", "c")
+// Destructure any number of tuple members
+let #(a, _, c) = tup;
+```
+<!--reset_layout-->
+<!--end_slide-->
+Dict Type
+---
+
+Dicts (short for `dictionary`) are similar to objects, or more aptly the ES6 `Map`. They are a hashmap of key:value pairs. Unlike in Typescript though, all the types in the Dict need to be the same type. Since Gleam uses `{}` to denote `blocks` of expressions, you can't use them to instantiate a `Dict`.
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+# Typescript
+
+```typescript
+// type: {a: string; b: string}
+let obj = {
+    "a": "letter a",
+    "b": "letter b"
+}
+// type Map<string, string>
+let map = new Map(obj)
+```
+<!--column: 1-->
+## Gleam
+
+```gleam
+import gleam/dict
+let obj = dict.new()
+    |> dict.insert("a", "letter a")
+    |> dict.insert("b", "letter b")
+```
+<!--reset_layout-->
+<!--pause-->
+_NOTE:_ Unlike the `List` or `Tuple` type, you need to import the `Dict` type from the stdlib to use it.
+<!--end_slide-->
+Custom Types
+---
+<!--speaker_note: These are a little weird at first, especially when you using them to build simple structs-->
+<!--speaker_note: It requires making a type with only one variant which feels kinda weird to me-->
+Custom types in Gleam look similar to `enums` in Typescript. However, the `variants` of the type can also include additional fields, similar to properties on an object. This is especially nice when you're representing tagged unions. Lets say we have a `Message` type.
+<!--column_layout: [3, 2]-->
+<!--column: 0-->
+# Typescript
+
+```typescript
+enum MessageType {
+    Incoming
+    Outgoing
+}
+type Message = {
+    messageType: MessageType.Incoming;
+    from: string;
+    message: string;
+} | {
+    messageType: MessageType.Outgoing;
+    to: string;
+    message: string;
+}
+```
+<!--column: 1-->
+## Gleam
+
+```gleam
+type Message {
+    Incoming(
+        message: String,
+        from: String
+    ),
+    Outgoing(
+        message: String,
+        to: String
+    )
+}
+```
+<!--end_slide-->
+Option Type
+---
+<!--speaker_note: Null references are the "Billion Dollar Mistake"-->
+<!--speaker_note: Explicitly having optional values is pretty nice because it forces you to encode meaning into the type-->
+There is not really a concept of `null` or `undefined` in Gleam. So unlike in Typescript where if you had an optional item you might use a type such as:
+
+```typescript
+let optionalString: string | undefined;
+```
+<!--pause-->
+In Gleam you would use the `Option` type. This type has two variants:
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+## Gleam
+
+```gleam
+type Option(T) {
+    Some(T)
+    None
+}
+```
+<!--column: 1-->
+# Typescript
+
+```typescript
+type Option<T> = {
+    _tag: "some";
+    value: T;
+} | { _tag: "none" }
+```
+<!--reset_layout-->
+<!--pause-->
+_NOTE:_ You need to import the `Option` type from the stdlib to use it.
+<!--end_slide-->
+Result Type
+---
+<!--speaker_note: Exceptions are AWFUL.-->
+<!--speaker_note: I hate that they take you out of your existing control flow-->
+Handling errors is pretty different than many non-functional languages. Errors in Gleam are treated as _values_, not exceptions. This makes it much easier to handle them in a predictable manner. Where in Typescript you may use the `throw` keyword, such as
+
+```typescript
+() => {
+    throw new Error("Oh no!")
+}
+```
+<!--pause-->
+While this is pretty simple the big downside is that you lose type safety. With Gleam you would use the `Result` type.
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+## Gleam
+
+```gleam
+type Result(Val, Err) {
+    Ok(Val)
+    Error(Err)
+}
+```
+<!--column: 1-->
+# Typescript
+
+```typescript
+type Result<Val, Err> = {
+    _tag: "ok";
+    value: Val;
+} | {
+    _tag: "error";
+    value: Err;
+}
+```
+<!--reset_layout-->
+<!--end_slide-->
+Example
+---
+
+Let's take a look at a simple Todo App written in Gleam. The code can be found on github at:
+![image:width:100%](./gleam-todo.png)
+<!--end_slide-->
+Why Gleam
+---
+
+I have three main cases for why you should consider Gleam for your next project:
+<!--pause-->
+# The FP Noob
+
+You want to learn more about functional programming but don't want to step into the world of monads and endofunctors ala Haskell.
+<!--pause-->
+## The Beam Enjoyer
+
+You want to make use of the BEAM VM and the existing ecosystem of Erlang and Elixir packages, but you prefer the simplicity and style of C or Javascript.
+<!--pause-->
+### Any sane person
+
+Lucy (The Gleam mascot) is just cute af.
+![Lucy on a computer](./lucydebugfail.png)
+<!--end_slide-->
+Additional Resources
+---
+<!--column_layout: [1, 1, 1]-->
+<!--column: 0-->
+# Gleam Language Tour
+
+![image:width:85%](./gleam-tour.png)
+<!--column: 1-->
+# Install
+
+![image:width:100%](./gleam-install.png)
+<!--column: 2-->
+# Project Tutorial
+
+![image:width:85%](./gleam-project.png)
+<!--end_slide-->
+Fin
+---
+
+![image:width:100%](./thank-you.gif)

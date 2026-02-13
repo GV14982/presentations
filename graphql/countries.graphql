@@ -1,0 +1,34 @@
+fragment ContinentNameCode on Continent {
+  name
+  code
+}
+
+fragment CountryCodeNameEmoji on Country {
+  code
+  name
+  emoji
+}
+
+query GetCountry {
+  country(code: "US") {
+    ...CountryCodeNameEmoji
+      continent {
+    ...ContinentNameCode
+  }
+  }
+}
+
+query ListCountries {
+  countries {
+    ...CountryCodeNameEmoji
+  }
+}
+
+query GetContinent {
+  continent(code: "NA") {
+    ...ContinentNameCode
+    countries {
+      ...CountryCodeNameEmoji
+    }
+  }
+}

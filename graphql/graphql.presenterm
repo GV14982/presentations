@@ -1,0 +1,514 @@
+---
+theme:
+    name: catppuccin-macchiato
+    override:
+        code:
+            theme_name: Catppuccin-macchiato
+---
+```bash +exec_replace +no_background
+figlet -c -f colossal "A   B r i e f   I n t r o   t o   G r a p h Q L" | lolcat -f -S 69
+```
+<!--end_slide-->
+Introduction
+---
+
+# Who even is this guy?
+<!--column_layout: [3, 2]-->
+<!--column: 0-->
+- Principal Software Engineer
+- Keyboard and ergonomics enthusiast
+- Die hard terminal fanboy
+- Loves typesystems and statically typed languages
+- Co-founder and Chief Terminal Nerd @ PHL Code Club
+
+![image:w:75%](code-club.png)
+<!--pause-->
+<!--column: 1-->
+And here is my cat Fritzy =3
+![image:w:100%](cat.png)
+<!--end_slide-->
+What even is this?
+---
+
+A couple quick ground rules about what this talk _is_ and **isn't**.
+
+# Is
+
+- A quick and dirty overview of the main components/ideas behind GraphQL
+- A fun and lighthearted stepping off point for anyone who is interested in or new to GraphQL
+- Some time for me to yap because I like yapping
+
+## Isn't
+
+- A full technical deep dive into the GraphQL type system or runtime
+- An authoritative list of when to use GraphQL
+- Me taking a side in a holy war between REST and GraphQL (I mean that's _**so**_ 2018)
+
+Just be respectful plz. I will have space at the end for questions if you have any!
+<!--end_slide-->
+What is GraphQL?
+---
+
+Stolen from [GraphQL.org](https://graphql.org)
+<!--column_layout: [2, 1]-->
+<!--column: 0-->
+> GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data. GraphQL provides a complete and understandable description of the data in your API, gives clients the power to ask for exactly what they need and nothing more, makes it easier to evolve APIs over time, and enables powerful developer tools.
+<!--pause-->
+<!--reset_layout-->
+![image:w:100%](huh.gif)
+<!--end_slide-->
+
+Can we break it down?
+---
+
+# GraphQL is split into 2 main components
+
+## GraphQL: the Language
+
+- Split into 2 subsets
+    1. Schema Definition Language (SDL)
+        - Used for defining the shape of your data. Think of it like declaring a schema for a table in SQL
+    2. Query Language
+        - Used for querying GraphQL APIs. This is dictated by and validated against the schema using the 2nd component...
+
+### GraphQL: the Runtime
+
+- The actual engine the handles API requests
+- Validates GraphQL queries against GraphQL schemas to verify that the API supports what is being asked of it
+- Resolves the query based on provided resolver functions
+  - Often times these return a static value or fetch data from a DB or external API. The returned value just needs to match the schema's return type
+<!--end_slide-->
+Let's get an example
+---
+<!--column_layout: [1, 1, 1]-->
+<!--column: 0-->
+# Schema
+
+```graphql
+type Project {
+  name: String
+  tagline: String
+  contributors: [User]
+}
+```
+
+Here we declare a `Project` type. This has 3 fields:
+
+- `name`
+  - This is a string type
+- `tagline`
+  - Also a string
+- `contributors`
+  - This one is a list of `User` types
+  - GraphQL lets you nest your types to allow for easy querying of related data by clients
+<!--pause-->
+<!--column: 1-->
+## Query
+
+```graphql
+{
+  project(name: "GraphQL") {
+    tagline
+  }
+}
+```
+
+Now we are going to send a GraphQL query to our server. Here we describe the shape of data we want to return. Notice how we are able to ask for specifically what we want, which reduces under and over fetching
+In this query we are getting the tagline of the `Project` with the name `GraphQL`
+<!--pause-->
+<!--column: 2-->
+### Result
+
+```json
+{
+  "project": {
+    "tagline": "A query language for APIs"
+  }
+}
+```
+
+Finally we get back a result. This result will be JSON that is the same format as our query, which makes extracting nested data very easy!
+![image:w:100%](./great-success.gif)
+<!--end_slide-->
+Schema Definition
+---
+
+GraphQL Schemas are built from a number of useful types. These range from scalar types (Think strings and numbers), to complex object types (Like a user or a product). However they all start with the main `schema` definition\*
+<!--pause-->
+<!--column_layout: [4, 1]-->
+<!--column: 0-->
+# Schema
+
+- This is the representation of the root level operations that can be handled by a GraphQL server. Sort of like rules about what a server can and can't do
+<!--column: 1-->
+![image:w:100%](./rules.gif)
+<!--reset_layout-->
+<!--column_layout: [1, 1, 1]-->
+<!--column: 0-->
+<!--pause-->
+## `Query`
+
+- Used for requesting data from the API
+- Similar to how the `GET` HTTP method is used by REST APIs
+- Examples:
+  - Requesting user data
+  - Requesting a list of products
+<!--column: 1-->
+<!--pause-->
+### `Mutation`
+
+- Used for makings stateful changes on the service
+- Similar to how `POST`/`PUT`/`PATCH`/`DELETE` HTTP methods are used by REST APIs
+- Examples:
+  - Logging a user in
+  - Submitting an order
+<!--column: 2-->
+<!--pause-->
+#### `Subscription`
+
+- Used for requesting data similar to `Query`, but also updates whenever this data changes
+- This is generally implemented using either WebSockets or Server Sent Events
+- Examples:
+  - Watching order status
+  - Live package tracking
+<!--reset_layout-->
+<!--pause-->
+\*Technically you don't _need_ an explicit `schema` definition, but you can ask me about that later ;)
+<!--end_slide-->
+Type Definitions
+---
+
+There are a handful of helpful type system definitions you can use to express your data. They include:
+
+- `Scalar`
+  - Primitive values like strings, numbers, booleans, etc
+- `Object`
+  - Sets of key/value pairs that can be used to represent complex data
+- `Enum`
+  - Fixed sets of values that are known at runtime
+- `Input`
+  - Like `Objects` but are only used for inputs to resolvers (More on that later)
+- `List`
+  - A list of zero or more of one of the other types
+- `Interface`
+  - Common field sets that an Object and implement
+- `Union`
+  - A union over a set of types (Basically an `or` type)
+- `Arguments`
+  - Used to specify additional data that will be used when calling GraphQL resolvers
+
+<!--end_slide-->
+Scalar Type
+---
+
+- keyword: `scalar`
+- Allows you to declare custom scalars (Sort of like primitive values)
+- The built in scalars for GraphQL are:
+  - `String`
+  - `Int`
+  - `Float`
+  - `Bool`
+  - `ID`
+    - This one is a little unique and beyond the scope of this talk
+
+```graphql +line_numbers
+scalar Url
+```
+<!--end_slide-->
+Object Type
+---
+
+- keyword: `type`
+- Used to express complex types
+- They consist of a name and a set of fields:
+  - These fields are key-values
+    - The key is the field name
+    - The value is the field type
+  - Field types can be scalars, object types, interfaces, unions, enums or lists
+  - There is also a special syntax for denoting whether or not a field is optional (or `nullable` in GraphQL terms)
+
+```graphql +line_numbers
+type CPU {
+  id: ID!
+  name: String!
+  baseClock: Float!
+  turboClock: Float
+  coreCount: Int!
+  cache: Int!
+  socket: Socket!
+  tdp: Float!
+  canOverclock: Bool!
+}
+
+type Socket {
+  name: String!
+  maxPowerRating: Float!
+}
+```
+<!--end_slide-->
+Enum Type
+---
+
+- keyword: `enum`
+- Enumerations are like lists of possible values. Very handy when you have a predefined set of options that you want to enforce at the type level
+
+```graphql +line_numbers
+enum BusinessType {
+  Retail
+  Hospitality
+  Service
+}
+```
+<!--end_slide-->
+
+Interface Type
+---
+
+- keyword: `interface`
+- Declare a common set of fields that an object type can implement. This allows you to verify that a type has a particular basic shape that can be extended to allow of additional information
+
+```graphql +line_numbers
+interface NamedEntity {
+  id: ID!
+  name: String!
+}
+
+type Business implements NamedEntity {
+  id: ID!
+  name: String!
+  type: BusinessType! # The enum we declared last slide
+}
+
+type Person implements NamedEntity {
+  id: ID!
+  name: String!
+  age: Int
+  friends: [Person!]!
+  photo: Url
+}
+```
+<!--end_slide-->
+Union Type
+---
+
+- keyword: `union`
+- Describes a union of types, basically an _or_. This is important for when you can return multiple possible types, but they don't all implement a common interface
+
+```graphql +line_numbers
+type User {
+  name: String!
+  photo: Url
+}
+
+type Post {
+  body: String!
+  author: User!
+}
+
+union SearchResult = User | Post
+```
+<!--end_slide-->
+Input Type
+---
+
+- keyword: `input`
+- Declare the shape of an input object. This will make more sense when we get into querying data
+
+```graphql +line_numbers
+input CreatePersonInput {
+    name: String!
+    age: Int
+    friends: [ID!]
+    photo: Url
+}
+```
+<!--end_slide-->
+
+Arguments
+---
+
+- Parens that come after a field in an `Object` type or `Schema` declaration
+- Used to pass additional data to resolvers at runtime.
+
+```graphql +line_numbers
+type UserWithPagedPosts {
+  user: User!
+  posts(skip: Int, limit: Int): [Post!]!
+}
+```
+<!--end_slide-->
+
+GraphQL Operations
+---
+
+The other side of GraphQL is describing the data you want to query using `operations` and `fragments`:
+<!--column_layout: [3, 2]-->
+<!--column: 0-->
+# Fragments
+
+- These let you create reusable snippets of fields on a particular type. These can either be explicitely created using the `fragment` keyword, or inline when working with interfaces and unions
+<!--reset_layout-->
+<!--column_layout: [3, 2]-->
+<!--pause-->
+<!--column: 0-->
+## Operations
+
+- These are how you tell a GraphQL service what data you want. They can be one of the three `root types`:
+  - `query`
+  - `mutation`
+  - `subscription`
+- You can only operate on what the schema supports
+- If you try to perform a mutation on a service that doesn't support them, you will get an error!
+- These are going to be a set of fields that you want to query, including any arguments, called a `selection set`
+<!--column: 1-->
+![image:w:100%](./query.gif)
+<!--end_slide-->
+Example GraphQL Operations
+---
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+If we use an example schema:
+
+```graphql +line_numbers
+type Query {
+    person(name: String!): Person
+}
+
+type Mutation {
+    create(input: CreatePersonInput): Person
+}
+
+scalar Url
+
+type Person {
+  id: ID!
+  name: String!
+  age: Int
+  friends: [Person!]!
+  photo: Url
+}
+
+input CreatePersonInput {
+    name: String!
+    age: Int
+    friends: [String!]
+    photo: Url
+
+}
+```
+<!--pause-->
+<!--column: 1-->
+We can do some operations:
+
+```graphql +line_numbers
+fragment NameAndPhoto on Person {
+    name
+    photo
+}
+query GetPerson {
+    person(name: "Graham Vasquez") {
+        ...NameAndPhoto
+        friends {
+            ...NameAndPhoto
+        }
+    }
+}
+mutation CreatePerson {
+    createPerson(input: {
+        name: "Fritzy",
+        age: 4,
+        friends: ["Graham Vasquez"],
+        photo: "https://gvasquez.dev/cat.png"
+    }) {
+        ...NameAndPhoto
+        age
+        friends {
+            name
+        }
+    }
+}
+```
+<!--end_slide-->
+Introspection
+---
+
+One really great feature about GraphQL is that it is **"Self Documenting"**.
+That is a bit of an overstatement since you can only encode so much information
+into the typesystem.
+
+GraphQL has a feature called `Introspection`. It allows you to query information
+about the schema using the same GraphQL syntax we use for querying data. This
+feature enables awesome features such as client code generation and editor
+auto-complete. The specifics of how this works is out of scope for this talk,
+but feel free to ask questions during Q&A!
+<!--pause-->
+![image:w:50%](introspection.gif)
+In this case Werner is wrong... Introspection is _**AWESOME**_!
+<!--end_slide-->
+Examples plz
+---
+
+Let's take a look at an example GraphQL service!
+
+[Countries API](https://countries.trevorblades.com/graphql)
+
+<!--end_slide-->
+But y tho?
+---
+
+Let's compare GraphQL to some other web api technologies:
+
+| Technology | Maturity | Type Safety | Support\* | Not XML |
+|------------|----------|-------------|-----------|---------|
+| `REST`     |    ✅    |      ❌     |    ✅     |    ✅   |
+| `SOAP`     |    ✅    |      ✅     |    ✅     |    ❌   |
+| `gRPC`     |    ✅    |      ✅     |    ❌     |    ✅   |
+| `TRPC`     |    ❌    |      ✅     |    ❌     |    ✅   |
+| `GraphQL`  |    ✅    |      ✅     |    ✅     |    ✅   |
+
+\* This mostly talks about cross client support (Web, mobile, other servers, etc)
+<!--pause-->
+However, this flexability isn't free. GraphQL has a decently large runtime that
+makes all this possible. In performance critical situations, GraphQL might
+not be the ideal candidate when every `ms` counts.
+
+However, when you have to work with multiple client teams and you can spare
+some clock cycles and network bandwidth, GraphQL can make handling the data
+layer of your API a breeze.
+
+<!--end_slide-->
+Q&A
+---
+
+![image:w:100%](./questions.gif)
+<!--end_slide-->
+Additional Resources
+---
+
+# Here are some great additional resources if you want to learn more
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+[GraphQL.org: Learn](https://graphql.org/learn)
+
+- Official GraphQL learning material
+
+![image:w:100%](./learn.qrcode.png)
+<!--column: 1-->
+[GraphQL.org: Resource Hub](https://graphql.org/resources)
+
+- Additional resources split by type
+
+![image:w:100%](./resource-hub.qrcode.png)
+<!--end_slide-->
+Contact
+---
+
+# Feel free to reach out to me
+
+[Website](https://graham@gvasquez.dev/)
+![image:w:100%](./gvasquez.qrcode.png)
+<!--end_slide-->
+Fin
+---
+
+![image:w:100%](./thank-you.gif)

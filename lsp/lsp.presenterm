@@ -1,0 +1,765 @@
+---
+theme:
+    name: catppuccin-macchiato
+    override:
+        slide_title:
+          padding_bottom: 0
+          padding_top: 0
+        code:
+            theme_name: Catppuccin-macchiato
+---
+
+```bash +exec_replace +no_background
+figlet -f small "THE BRAIN OF" | lolcat -f -S 420
+figlet -f small "THE MODERN" | lolcat -f -S 420
+figlet -f small "EDITOR" | lolcat -f -S 420
+```
+<!-- end_slide-->
+echo $(whoami)
+--
+<!--column_layout: [5, 4]-->
+<!--column: 0-->
+<!--
+  speaker_note: |
+  - Principl Software Engineer
+  - Co-founder and Chief Terminal Nerd @ Philly Code Club
+    - I have stickers
+  - Me and my cat Fritzy
+-->
+- Principle Software Engineer
+- Co-founder and Chief Terminal Nerd @ PHL Code Club 󰍹
+
+![image:width:100%](../assets/phl-code-lg.png)
+<!--column: 1-->
+Here is me with me cat, Fritzy =3
+![image:w:100%](../assets/photo.jpg)
+<!--end_slide-->
+Some Helpful Acronyms
+--
+<!--
+  speaker_note: |
+  - LSP: Language Server Protocol
+  - IPC: Inter Process Communication
+  - RPC: Remote Procedure Call
+  - STDIO: Standard Input and Output
+-->
+- `LSP`: Language Server Protocol
+- `IPC`: Inter Process Communication
+- `JSON`: JavaScript Object Notation
+- `RPC`: Remote Procedure Call
+- `STDIO`: Standard Input/Output
+<!--end_slide-->
+Setting Expectations
+--
+<!--
+  speaker_note: |
+
+  What this talk is:
+
+  - An introduction to LSP and related concepts like IPC and
+  JSON RPC
+  - A brief look at some of the cool features that LSP provides
+  - Some time to look at cool technology
+
+  What this isn't
+
+  - A full technical deep dive into LSP
+  - An authoritative list of the capabilities of LSP
+  - An endorsement of Microsoft, ew
+-->
+
+What this talk is:
+
+- An introduction to LSP and related concepts like IPC and
+JSON RPC
+- A brief look at some of the cool features that LSP provides
+- Some time to look at cool technology
+
+What this isn't
+
+- A full technical deep dive into LSP
+- An authoritative list of the capabilities of LSP
+- An endorsement of Microsoft, ew
+<!--end_slide-->
+Overview
+---
+<!--
+  speaker_note: |
+  The Five W's of LSP: Stolen from TJ Devries on Youtube
+
+  Language Servers and Clients
+
+  Basics of IPC
+
+  Defining JSON RPC
+
+  Common Messages
+
+  Negotiating Capabilities
+
+  Sample Flow
+
+  `tsserver`, the Typescript Language Server
+-->
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+The Five W's of LSP[^1]
+
+Basics of IPC
+
+Defining JSON RPC
+
+Language Servers and Clients
+
+<!--column: 1-->
+
+Common Messages
+
+Negotiating Capabilities
+
+Sample Flow
+
+`tsserver`, the Typescript Language Server
+<!--end_slide-->
+Who is LSP
+--
+
+<!--
+  speaker_note: |
+  LSP was initially designed at Microsoft to power their new text editor, VSCode
+-->
+LSP was initially designed at Microsoft to power their new text editor. You may
+have heard of it... VSCode!
+<!--end_slide-->
+When is LSP
+--
+
+<!-- speaker_note: initial commit in 2015 and open sourced in 2016-->
+The initial commit for LSP was in 2015 when Microsoft started work on VSCode
+with it being open sourced in 2016.
+
+<!-- speaker_note: silently, or not so silently, powering editor tooling ever since!-->
+Powering tooling in editors such as VSCode, Neovim, Zed and more for years!
+<!--end_slide-->
+What is LSP
+--
+
+<!-- 
+  speaker_note: |
+  LSP the specification that Language Servers use to talk to Clents (Generally 
+  text editors). More on that later
+-->
+
+Language Server Protocol, or `LSP`, is a specification that aims to
+standardize communication between `Language Servers` and `Clients.` More on
+those later
+
+<!--end_slide-->
+Where is LSP
+--
+
+<!--
+  speaker_note: |
+  The spec is open source and is likely currently running inside your editor
+  Some other places you might see it are browser editors, AI agents, and the 
+  Symbols tab in GitHub (Technically not LSP, but LSIF)
+-->
+
+The specification is [Open Source](https://microsoft.github.io/language-server-protocol/).
+
+It likely powers the editor you use everyday, as well as other tools like:
+
+- In browser editors like Monaco and CodeMirror
+- Inside AI Agents like OpenCode and Goose
+- The Symbols tab on GitHub (That's technically `LSIF`, the sister to `LSP`)
+
+<!--end_slide-->
+Why is LSP
+--
+
+<!--
+  speaker_note: |
+
+  Each tool needs custom code to handle each language for autocomplete, symbols,
+  refactors, etc.
+
+  each tool has one LSP client (Generally) and each language has one
+  Language Server (Hopefully).
+-->
+
+Each tool needs custom code to handle each language for autocomplete, symbols,
+refactors, etc.
+
+With LSP each tool has `one` LSP client (Generally) and each language has `one`
+Language Server (Hopefully).
+
+<!--end_slide-->
+Why is LSP: Table
+--
+<!--
+  speaker_note: |
+  LSP takes us from `x*y` to `x+y` in terms of the number of 
+  implementations that need to maintained
+ -->
+
+| ✖ | Go | Rust | Gleam | Typescript |
+| --- | --- | --- | --- | --- |
+| VSCode | ✅ | ✅ | ✅ | ✅ |
+| Neovim | ✅ | ✅ | ✅ | ✅ |
+| Zed | ✅ | ✅ | ✅ | ✅ |
+
+<!--pause-->
+<!--column_layout: [2, 1, 2]-->
+<!--column: 0-->
+
+| Language | |
+| --- | --- |
+| Go | ✅ |
+| Rust | ✅ |
+| Gleam | ✅ |
+| Typescript | ✅ |
+
+<!--column: 1-->
+<!--new_lines: 3-->
+➕
+<!--column: 2-->
+
+| Editor | |
+| --- | --- |
+| Neovim | ✅ |
+| VSCode | ✅ |
+| Zed | ✅ |
+<!--end_slide-->
+Basics of IPC
+--
+<!--
+  speaker_note: |
+  IPC, or Inter-process Communication is how one piece of software talks to another. 
+
+  This is generally on the same machine, but network requests utilizing sockets 
+  are another method of IPC.
+
+  - Small aside about how presenterm uses IPC to communicate between publisher 
+  and listener for speaker notes
+
+  LSP utilizes STDIO for communication. It is a direct link from a parent process
+  to a child process. This is the stuff you see and interact with when running 
+  commands in a shell.
+  
+  STDIO is comprised of:
+
+  - stdin
+    - standard input
+    - how the parent process gets information into the child process
+    - How LSP clients send messages to language servers
+  - stdout
+    - standard output
+    - one of the ways the child process gets data back to the parent process
+    - this is the primary avenue for language servers to respond to requests
+    and send notifications
+  - stderr
+    - standard error
+    - the other way the child process gets data back to the parent process
+    - language servers usually use stderr for logging as not to pollute stdout
+    and break the JSON RPC
+
+ -->
+
+`IPC` is how one piece of software talks to another, usually on the same machine.
+
+`LSP` generally uses `STDIO` for communication. It is comprised of:
+
+- `stdin`
+- `stdout`
+- `stderr`
+
+<!--end_slide-->
+Defining JSON RPC
+--
+
+<!--
+  speaker_note: |
+  JSON RPC is a simple protocol for using JSON messages to handle remote 
+  procedure calls. It is transport agnostic, so you can have JSON RPC API's 
+  over HTTP as well as something like STDIO.
+
+  Quick disclaimer, when I say "structured data", I am talking about either 
+  positional args via arrays, or key value pairs via objects
+
+  There are 4 main object types:
+  - Requests
+    - Used to call remote procedures on a server. Sometimes expecting a response 
+    in return
+    - An example would be requesting hover definition
+  - Responses
+    - Used to get data from the server back to the client, generally in response
+    to a request
+    - Can be either a be a success or error
+    - An example would be the result of that hover definition
+  - Client Notifications
+    - Sent by clients when they want to call a procedure but do not expect a response
+    - An example would be the client telling the server when a new file has been 
+    opened
+  - Server Notifications
+    - Sent by servers to notify clients of changes without the client needing to 
+    send a request prior
+    - An example might be a server sending diagnostic informtion to a client after 
+    running validation
+
+-->
+
+`JSON RPC` is a simple protocol for using `JSON` messages to handle remote
+procedure calls. It is transport agnostic, so you can have `JSON RPC` API's
+over `HTTP` as well as something like `STDIO`.
+
+There are 4 main object types:
+
+- Requests
+- Responses
+- Client Notifications
+- Server Notifications
+<!--end_slide-->
+LSP Components
+--
+
+<!--
+  speaker_note: |
+  lSP uses two distinct components:
+  - Language Servers
+    - How you interact with a `Language Server`. Takes LSP responses/notifications
+    and can perform actions on them.
+    - The brains of the operation where all the language specific code lives
+  - Clients
+    - Handles language specific details. Computes diagnostics, keeps track of symbols,
+    and can offer refactors (sometimes called `Code Actions`)
+    - Sort of like the senses for the brain, taking in information and responding 
+    to notifications
+ -->
+
+The `LSP` spec defines 2 distinct components:
+
+- `Clients`
+  - How you interact with a `Language Server`. Takes LSP responses/notifications
+  and can perform actions on them.
+- `Language Servers`
+  - Handles language specific details. Computes diagnostics, keeps track of symbols,
+  and can offer refactors (sometimes called `Code Actions`)
+<!--end_slide-->
+Language Servers
+--
+<!--
+    speaker_note: |
+    - A process that gets started and owned by the Client to handle requests and
+    emit notifications
+    - Where all the language specific code lives
+    - Fully decoupled from the details of the client
+    - Likely a standalone executable like rust-analyzer or gopls, or might be 
+    part of an existing toolchain like the Gleam language server. It could also
+    be a library that needs to use another runtime like the Typescript language 
+    server
+-->
+A process that gets started and owned by the `Client` to handle requests and
+emit notifications
+
+Where all the language specific code lives
+
+Decoupled from the details of the `Client`
+
+<!--end_slide-->
+LSP Clients
+--
+
+<!--
+  speaker_note: |
+
+  - Spawns the a Language Server process for each filetype opened and owns them
+  for the life of editing session
+  - How you communicate with the Language Server
+  - Generic for all Language Servers (Usually)
+  - Usually a text editor, but might be an AI agent or some other process that
+  needs to inspect code
+-->
+
+Spawns and manages `Language Server` processes and communication with them using
+`IPC` (Coming up next)
+
+Takes actions inside of the source software based on responses and notifications.
+
+Generic for all `Language Servers` (_hopefully_)
+
+<!--end_slide-->
+Protocol Message Structure
+--
+<!--
+  speaker_note: |
+  A spec compliant message is comprised of two separate sections separated by a 
+  carriage return and newline, very similar to HTTP:
+  1. Header part
+    - Metadata about the message
+  2. Content part
+    - The actual JSON data of the message
+
+-->
+
+The spec divides messages into two parts separated by `\r\n`:
+
+- Header part
+  - Metadata about the message
+- Content part
+  - The actual data of the message in `JSON` form.
+
+<!--end_slide-->
+Message Headers
+--
+
+<!--
+  speaker_note: |
+
+  The Header part is a set of "headers" the describe the message being sent. 
+  These are newline delimited, colon separated key/value pairs. There are only 
+  two spec compliant headers:
+  - Content-Length
+    - Required
+    - The length of the content part in bytes
+    - example: The content part of the message is 16 bytes long
+  - Content-Type
+    - Optional
+    - The mime type of the `content part`
+    - example: The content type of the message is standard JSON
+
+  I am not very familiar with the `application/vscode-jsonrpc` mime type, but
+  I would assume is effectively just JSON.
+-->
+
+Two spec compliant headers:
+
+- Content-Length
+  - Required
+  - The length of the `content part` in bytes
+  - example: `Content-Length: 16\r\n`
+- Content-Type
+  - Optional
+  - The mime type of the `content part`
+  - defaults to `application/vscode-jsonrpc;charset=utf-8`
+  - example: `Content-Type: application/json\r\n`
+
+<!--end_slide-->
+Message Content
+--
+
+<!--
+  speaker_note: |
+
+  The content part is a JSON encoded message that follows the JSON RPC spec. That 
+  is the JSON data should conform to one of the 4 message types described earlier. 
+
+-->
+
+Example JSON RPC Message:
+
+```json
+Content-Length: 118\r\n
+\r\n
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "namespace/methodName",
+  "params": {
+    "someParam": "PhillyJS"
+  }
+}
+```
+
+<!--end_slide-->
+Common Messages
+--
+<!--
+  speaker_note: |
+  The LSP spec is pretty in depth, so I couldn't possibly cover it in this short 
+  talk. I will however cover a couple of the most common message types that are 
+  used, at least in my own editing and workflows
+
+  Autocomplete:
+
+  Completions are probably the quintessential feature of LSP. Getting suggestions
+  while you are typing is so helpful, especially for someone like me who is absolutely
+  not a good typist.
+
+  Go to definition/declaration/definition/implementation and Find References:
+
+  This feature is so useful for navigating large codebases. Not needing to know
+  where every thing is defined all the time is very helpful. This makes it a breeze 
+  to find what you're looking for without having to resort to grep 
+  (Not that I don't love grep)
+
+  Code Lenses/Code Actions:
+
+  Along the same lines as autocomplete, I love when I can automate tidium with 
+  minimal cost. One of my favorite language servers is the one for Gleam. They provide
+  SO MANY great code actions.
+
+  Diagnostics:
+
+  I mean who doesn't love thier editor yelling at them before they've finished 
+  typing. In reality getting feedback about possible issues in my project without 
+  having to leave my text buffer streamlines my process so much
+
+-->
+
+Some common features that you might not know are powered by LSP.
+
+- Autocomplete
+- Go to definition/declaration/definition/implementation
+- Find References
+- Code Lenses/Code Actions
+- Diagnostics
+
+<!--end_slide-->
+Negotiating Capabilities
+--
+<!--
+  speaker_note: |
+  Language servers and LSP clients don't need to support every feature of the spec. 
+  During initialization, the Client and Server exchange what capabilities
+  they support. A capability is just a particular feature or action that is
+  part of the spec.
+
+  The client uses the capabilities field on the InitialzeParams type when
+  calling the initialize method. The server then responds with an InitializeResult
+  that includes a similar capabilities field that describes the server capabilities
+
+  Finally the client sends back a notification with the "initialized" method to 
+  finalize the process and start sharing document data.
+-->
+
+```mermaid +render
+sequenceDiagram
+  participant c as Client
+  participant s as Server
+  c->>s: Send an initialize request with the<br/>capabilities the client supports
+  s->>c: Send an initialize response with the<br/>capabilities the server supports
+  c-)s: Send an initialized notification to ack <br/> the initialize response
+```
+
+<!--end_slide-->
+Document Synchronization
+--
+
+<!--
+  speaker_note: |
+  Language Servers need to know about the documents we are editing to do anything 
+  useful with said documents. We manage this state using a handful of 
+  "document synchronization" methods. These include:
+  
+  - `textDocument/didOpen`
+    - Sent when you first open a document to notify the language server so
+    it can do things like compute diagnostics
+  - `textDocument/didChange`
+    - Sent when you you make an edit to an existing document so the language server
+    can _recompute_ things like diagnostics
+  - `textDocument/didClose`
+    - Sent when you close a document so the language server can cleanup any resources
+    tied to that document
+
+-->
+
+- `textDocument/didOpen`
+  - Sent when you first open a document to notify the language server so
+    it can do things like compute diagnostics
+- `textDocument/didChange`
+  - Sent when you you make an edit to an existing document so the language server
+    can _recompute_ things like diagnostics
+- `textDocument/didClose`
+  - Sent when you close a document so the language server can cleanup any resources
+    tied to that document
+<!--end_slide-->
+Document Synchronization Example
+--
+<!--
+  speaker_note: |
+  Here is an example of what document synchronization might look like. We start 
+  with the client notifying the server that it has opened a new document. The
+  server then computes diagnostics for that document, in this case there are none
+  as the file is in a good state.
+  
+  Next we make a broken change to that file and notify the server of our changes.
+  The server recomputes the diagnostics and sends back another notification, this
+  time with information about where our code is broken.
+
+  Note that these are all notifications, so this is entirely asynchronous. These
+  steps are not dependent on one another (Except the didOpen and didChange) notifications
+  from the client.
+-->
+```mermaid +render
+sequenceDiagram
+  participant c as Client
+  participant s as Server
+  c--)s: Send a `textDocument/didOpen`<br/>notification with file with now issues
+  s--)c: Send a `textDocument/publishDiagnostics`<br/>with no diagnostics
+  c--)s: Send a `textDocument/didChange`<br/>notification with a file with issues
+  s--)c: Send a `textDocument/publishDiagnostics`<br/>with diagnostics for those issues
+```
+<!--end_slide-->
+Sample Message: Diagnostics
+--
+
+<!--
+  speaker_note: |
+
+  This is a notification the server sends to the client whenever it recomputes 
+  diagnostic information for a particular document. The document's URI is given
+  on line 4, with the diagnostics being an array of objects that include 
+  information such as:
+  - The text range of the diagnostic
+    - Line 7
+    - This is an object that tells the client _where_ this diagnostics needs to 
+    be represented in the document. It includes the start and end positions. 
+    I just ran out of space here
+  - The severity of the diagnostic
+    - Line 8
+    - This tells the client the "severity level" of the diagnostic. It is an 
+    enum that represents values such as:
+      - Error
+      - Warning
+      - Hint
+  - The diagnostic message:
+    - Line 9
+    - This is a required field that tells the client what the actual diagnostic 
+    _means_. You have this field to thank for those ungodly monstrosities they 
+    call "Typescript Errors"
+-->
+
+```json +line_numbers
+{
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "uri": "file:///path/to/file.ts",
+      "diagnostics": [
+        {
+          "range": {...},
+          "severity": 1,
+          "message": "BROKEN :("
+        }
+      ]
+    }
+}
+```
+
+<!--end_slide-->
+Sample Flow: Autocomplete - Diagram
+--
+
+```mermaid +render
+sequenceDiagram
+  participant c as Client
+  participant s as Server
+  c->>+s: Send a `textDocument/completion`<br/>request with the document uri and position
+  s->>-c: Send a `textDocument/completion`<br/>response a list of completions
+  c->>c: The selected completion is applied
+  Note over c: The inserted text can from one<br/> of three fields on the completion:<br/>1.textEdit<br/>2.insertText<br/>3.label
+```
+<!--end_slide-->
+Sample Flow: Autocomplete - Request
+--
+<!--
+  speaker_note: |
+
+  An example of a request for completions. This message includes the text 
+  document and position said text document that the server needs to look at to 
+  compute a completion list.
+
+  In this case we are looking at line 19 character 93 inside of file.ts
+-->
+
+```json +line_numbers
+{
+    "jsonrpc": "2.0",
+    "id": 42,
+    "method": "textDocument/completion",
+    "params": {
+      "textDocument": {
+        "uri": "file:///path/to/file.ts"
+      },
+      "position": {
+          "line": 19,
+          "character": 93
+      }
+    }
+}
+```
+
+<!--end_slide-->
+Sample Flow: Autocomplete - Response
+--
+
+<!--
+  speaker_note: |
+
+  This is what a response from the server might look like. The ID matches our 
+  request ID, and the result field is an array of completion objects. This example 
+  only shows one very simplistic completion because I ran out of room.
+
+  The suggestion we have has a label of "Text Suggestion" and a kind of 1. Kind 
+  is an enum that maps to various kinds of completions. In this case it is 
+  consdered a "Text" completion.
+
+  This list likely has many other suggestions, and they can include other fields 
+  that tell the client what to do if that completion is selected or additional 
+  details about the completion.
+
+  If only the "label" is supplied, the client will just insert the label text 
+  upon selecting that completion.
+-->
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 42,
+    "result": [
+      {
+        "label": "Text Suggestion", 
+        "kind": 1,
+      },
+      // ...other items
+    ]
+}
+```
+
+<!--end_slide-->
+Basic LSP Client
+--
+
+<!--
+  speaker_note: |
+  I had initially planned on digging into the TypeScript language server
+  code, but that stuff is **dense**. So instead I put together a little example
+  of a client that we can use to interact with a language server and see what the
+  communication looks like!
+
+  With Microsoft again putting a wrench in my plan, the Typescript LSP is... _weird_. So
+  we will be looking at the Go language server: `gopls`!
+-->
+
+I had initially planned on digging into the TypeScript language server
+code, but that stuff is **dense**. So instead I put together a little example
+of a client that we can use to interact with a language server and see what the
+communication looks like!
+
+With Microsoft again putting a wrench in my plan, the Typescript LSP is... _weird_. So
+we will be looking at the Go language server: `gopls`!
+<!--end_slide-->
+Citations
+--
+
+1. [TJ Devries LSP Video](https://www.youtube.com/watch?v=LaS32vctfOY)
+
+<!--end_slide-->
+$(which gvasquez)
+--
+<!--column_layout: [1,1]-->
+<!--column: 0-->
+[My website!](https://gvasquez.dev/)
+![image:width:100%](../assets/gvasquez-qr-code.png)
+<!--column: 1-->
+[PHL Code Club](https://phlcode.club/)
+![image:width:100%](../assets/code-club-qr-code.png)

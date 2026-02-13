@@ -1,0 +1,508 @@
+---
+theme:
+    name: catppuccin-macchiato
+    override:
+        code:
+            theme_name: Catppuccin-macchiato
+---
+
+```bash +exec_replace +no_background
+figlet -c -f big "Cache Me" | lolcat -f -S 666
+figlet -c -f big "If You Can" | lolcat -f -S 666
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' '—' | lolcat -f -S 69
+figlet -c -f small 'Outrunning Slow Web Requests' | lolcat -f -S 420
+```
+<!-- end_slide -->
+
+echo $(whoami)
+--
+<!--column_layout: [3, 2]-->
+<!--column: 0-->
+<!-- speaker_note: Talk about my experience and cat -->
+- Principle Software Engineer\*
+- Mechanical keyboard and ergonomics enthusiast
+- Die hard terminal fanboy
+- Functional programming nerd
+- Co-founder of the PHL Code Club
+  - I have stickers =3
+
+![image:width:100%](../assets/phl-code-lg.png)
+<!--column: 1-->
+Here is me with me cat, Fritzy =3
+![image:w:100%](../assets/photo.jpg)
+<!--newlines: 2-->
+\*Technically I'm still a Senior Engineer until October 6th 🙃
+<!--end_slide-->
+
+On the docket
+---
+
+# Computer memory 101
+
+## Average web app structure
+
+### Why cache in web services?
+
+#### Following a web request through the service
+
+- Browser/client caching
+
+- CDNs and edge caching
+
+- Application caching
+
+##### Caching strategies and pitfalls
+
+<!--end_slide-->
+
+Cache terminology 101
+---
+
+# Common caching terms you'll hear
+
+## Cache outcomes
+
+- **Hit**: Data found in cache - fast response
+- **Miss**: Data not in cache - need to fetch from origin
+- **Stale**: Cached data is outdated but still served
+- **Fresh**: Cached data is current and valid
+
+## Cache management
+
+- **TTL (Time To Live)**: How long data stays cached
+- **Invalidation**: Marking cached data as outdated
+- **Eviction/Purge/Clear**: Removing data from cache
+- **CDN (Content Delivery Network)**: Global cache network
+- **Edge**: Compute platforms that live in CDN Points of Presence (POP)
+<!--end_slide-->
+
+Computer memory 101
+---
+<!-- speaker_note: Break down persistent and volatile memory -->
+# Types of computer memory
+
+## Persistent
+
+- Long term storage
+- Slow (comparatively)
+- Does not require power to retain data
+
+## Volatile
+
+- Short term storage
+- Fast(er)
+  - Depends on the specifics of the volatile memory
+  - RAM is faster than persistent drives thanks to bandwidth and physical location near the CPU
+  - CPU caches (HE SAID THE WORD) are faster than RAM due to colocation with the CPU, but they are _tiny_ in comparison
+- Requires power to retain information, once power is lost, all data is lost
+
+We'll mostly focus on persistent storage on disk/SSD and RAM for volatile memory.
+<!--end_slide-->
+
+Modern web architectures
+---
+<!-- speaker_note: Go over common web application architectures using ConTracker -->
+<!--column_layout: [1,1]-->
+<!--column: 1-->
+
+```mermaid +render
+graph TD
+    A[Mobile App/Browser] --> B[ConTracker API Server]
+    B --> C[Database: Postgres]
+    B --> D[Object Storage: Minio]
+    
+    style A fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style B fill:#c6a0f6,stroke:#24273a,stroke-width:2px,color:#24273a
+    style C fill:#a6da95,stroke:#24273a,stroke-width:2px,color:#24273a
+    style D fill:#eed49f,stroke:#24273a,stroke-width:2px,color:#24273a
+```
+<!--column: 0-->
+## Main components for ConTracker
+
+### Client
+
+- Web app, mobile app, or even other servers.
+- Requests data from the API server, such as user profiles, messages, etc.
+
+### API Server  
+
+- Small HTTP server.
+- Handles requests for data from clients.
+<!--column: 1-->
+### Storage
+
+- Database
+  - Stores structured data such as user profiles, relationships between users, etc.
+- Object Storage
+  - Stores large objects such as photos, audio files, and videos.
+
+<!--end_slide-->
+
+But why spend my cash on cache?
+---
+<!--column_layout: [3,2]-->
+<!--column: 0-->
+# The problem with no caching
+
+Requests to the API server _without_ caching might look something like this:
+
+```mermaid +render
+sequenceDiagram
+    participant U as User
+    participant API as API Server
+    participant DB as Database
+    
+    U->>API: Get list of recommended local restaurants
+    API->>DB: Complex geo query
+    DB-->>API: 500ms later...
+    API->>DB: Get reviews for each restaurant
+    DB-->>API: Another 300ms...
+    API->>DB: Get user preferences
+    DB-->>API: 100ms more...
+    API-->>U: Finally! 900ms total
+    
+    Note over U,DB: User gets frustrated and leaves
+```
+<!--column: 1-->
+## The numbers that hurt
+
+- Network latency: 50-200ms per request
+- Database queries: 100-500ms for complex operations  
+- Users expect responses under 100ms
+- Every 100ms delay = 1% drop in sales [1]
+
+<!--end_slide-->
+
+Browser caching (automatic)
+---
+<!--column_layout: [1,1]-->
+<!--column: 0-->
+Your browser is already caching lots of data automatically\*:
+
+```mermaid +render
+graph TD
+    A[App loads] --> B{Static assets cached?}
+    B -->|Yes| C[Load from disk cache - 0ms]
+    B -->|No| D[Download CSS, JS, images]
+    D --> E[Store in browser cache]
+    E --> F[Display page]
+    C --> F
+    
+    style A fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style B fill:#eed49f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style C fill:#a6da95,stroke:#24273a,stroke-width:2px,color:#24273a
+    style D fill:#f5a97f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style E fill:#c6a0f6,stroke:#24273a,stroke-width:2px,color:#24273a
+    style F fill:#91d7e3,stroke:#24273a,stroke-width:2px,color:#24273a
+```
+<!--column: 1-->
+# What gets cached automatically
+
+- JavaScript bundles (maybe a SPA)
+- CSS stylesheets
+- Photos
+- Icons
+- Fonts
+
+## HTTP response headers control this behavior
+
+```bash
+# Cache for 1 day
+Cache-Control: public, max-age=86400
+# Version identifier
+ETag: "company-logo-v2.png"
+```
+
+<!--end_slide-->
+
+Client caching (manual)
+---
+<!--column_layout: [3, 2]-->
+<!--column: 0-->
+We can also cache API responses in our client code. This is perfect
+for high priority data that might not change often, or is readily controlled by the user.
+<!--column: 1-->
+
+```mermaid +render +width:100%
+flowchart TD
+    A[Request user color palette] --> B{Check local cache}
+    B -->|Cache exists| C{Is cache fresh?<br/>< 10 minutes old}
+    B -->|No cache| E[Fetch from API]
+    C -->|Yes| D[Return cached data - Fast!]
+    C -->|No| E
+    E --> F[Store in cache with timestamp]
+    F --> G[Return fresh data]
+    
+    style A fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style B fill:#eed49f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style C fill:#f5a97f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style D fill:#a6da95,stroke:#24273a,stroke-width:2px,color:#24273a
+    style E fill:#ed8796,stroke:#24273a,stroke-width:2px,color:#24273a
+    style F fill:#c6a0f6,stroke:#24273a,stroke-width:2px,color:#24273a
+    style G fill:#91d7e3,stroke:#24273a,stroke-width:2px,color:#24273a
+```
+
+<!--end_slide-->
+
+CDNs - Your global cache network
+---
+<!--column_layout: [1, 2]-->
+<!--column: 0-->
+# What do CDN's generally cache
+
+- Web app assets
+  - HTML
+  - CSS
+  - JS
+- Static content
+  - Logos
+  - Fonts
+  - Public Documents
+<!--column: 1-->
+```mermaid +render
+graph TD
+    A[User in Tokyo] --> B[Cloudflare Tokyo]
+    C[User in NYC] --> D[Cloudflare NYC]  
+    E[User in London] --> F[Cloudflare London]
+    
+    B --> G[Origin Server]
+    D --> G
+    F --> G
+    
+    G --> H[Object Storage]
+    
+    style A fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style B fill:#f5a97f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style C fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style D fill:#f5a97f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style E fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style F fill:#f5a97f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style G fill:#8aadf4,stroke:#24273a,stroke-width:2px,color:#24273a
+    style H fill:#eed49f,stroke:#24273a,stroke-width:2px,color:#24273a
+```
+<!--end_slide-->
+
+HTTP Cache (Varnish, Nginx w/ plugins, etc)
+---
+
+HTTP reverse proxy that sits in front of ConTracker:
+
+```mermaid +render +width:75%
+graph LR
+    A[Agent] --> B[Varnish Cache]
+    B -->|Cache Hit| C[Return response]
+    B -->|Cache Miss| D[API Server]
+    D --> E[Database]
+    D --> B
+    B --> A
+    
+    style A fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style B fill:#8aadf4,stroke:#24273a,stroke-width:2px,color:#24273a
+    style C fill:#a6da95,stroke:#24273a,stroke-width:2px,color:#24273a
+    style D fill:#c6a0f6,stroke:#24273a,stroke-width:2px,color:#24273a
+    style E fill:#eed49f,stroke:#24273a,stroke-width:2px,color:#24273a
+```
+
+Perfect for caching entire HTTP responses on the edge!
+<!--end_slide-->
+
+Application caches - Redis, Memcached, Valkey, et al
+---
+
+Where API servers store frequently accessed data:
+
+```mermaid +render +width:100%
+graph LR
+    A[API Request] --> B{Redis Cache}
+    B -->|Hit| C[Return cached data - 1ms]
+    B -->|Miss| D[Query PostgreSQL - 200ms]
+    D --> E[Store in Redis]
+    E --> F[Return to user]
+    
+    style A fill:#8bd5ca,stroke:#24273a,stroke-width:2px,color:#24273a
+    style B fill:#ed8796,stroke:#24273a,stroke-width:2px,color:#24273a
+    style C fill:#a6da95,stroke:#24273a,stroke-width:2px,color:#24273a
+    style D fill:#f5a97f,stroke:#24273a,stroke-width:2px,color:#24273a
+    style E fill:#c6a0f6,stroke:#24273a,stroke-width:2px,color:#24273a
+    style F fill:#91d7e3,stroke:#24273a,stroke-width:2px,color:#24273a
+```
+
+# How it works
+
+- **Cache key strategy**: Use consistent naming like `user_prefs:{user_id}` and `post:{post_id}`
+- **TTL management**: Different timeframes for different data types
+- **Cache warming**: Pre-populate frequently accessed data
+- **Fallback handling**: Always handle cache misses gracefully
+
+<!--end_slide-->
+
+Cache invalidation - The hard problem
+---
+
+> "There are only two hard things in Computer Science: cache invalidation, naming things, and off-by-one errors."
+
+# Cache invalidation strategies
+
+## Time-based (TTL) - Simple
+
+Set expiration times when storing data. Post info gets 1 hour TTL, user sessions get 30 minutes. Easy to implement but might serve stale data.
+
+## Event-based - More complex but accurate  
+
+When data changes, immediately invalidate related caches. Post edits trigger cache clears for that post and all search results. Keeps data fresh but requires more coordination.
+
+## Manual - For emergencies
+
+Admin endpoints to clear caches when things go wrong. The "nuclear option" when you need to clear things quickly.
+
+<!--end_slide-->
+
+The cache stampede problem
+---
+
+What happens when the API's "trending posts" cache expires:
+
+```mermaid +render +width:100%
+sequenceDiagram
+    participant C1 as User 1
+    participant C2 as User 2
+    participant C3 as User 3
+    participant Cache as Redis
+    participant DB as Database
+    
+    Note over Cache: Trending posts cache expires
+    
+    C1->>Cache: Get trending list
+    Cache-->>C1: Cache miss
+    C2->>Cache: Get trending list  
+    Cache-->>C2: Cache miss
+    C3->>Cache: Get trending list
+    Cache-->>C3: Cache miss
+    
+    Note over DB: All 3 hit database simultaneously!
+    
+    C1->>DB: Complex query
+    C2->>DB: Same complex query
+    C3->>DB: Same complex query
+    
+    Note over DB: Database struggles
+```
+
+<!--end_slide-->
+
+The cache stampede solution
+---
+
+# Lock-based approach
+
+First request gets a lock, computes the data, and stores it. Other requests wait for the first one to finish and return the data that is stored in the cache.
+
+Also called `cache collapse` or `request coalescing` [2]
+
+## Probabilistic refresh
+
+Refresh cache before it expires based on random probability. Spreads out the load instead of everyone hitting at once.
+
+<!--end_slide-->
+Common pitfalls (and how we avoided them)
+---
+
+# Cache consistency nightmare
+
+- **Problem**: CDN shows old case status, app cache shows new status
+- **Solution**: Version-based invalidation and cache warming
+
+## Over-caching everything
+
+- **Problem**: Caching constantly updating information can lead to consistently stale data
+- **Solution**: Profile first, then cache selectively
+
+### Under-caching the obvious
+
+- **Problem**: Didn't cache document OCR operations - server melting
+- **Solution**: Cache expensive operations, not just database queries  
+
+#### Default TTL disaster
+
+- **Problem**: Used default TTL for everything
+- **Solution**: Different TTLs for different data types
+
+<!--end_slide-->
+
+Best practices
+---
+
+# Do ✅
+
+- **Set appropriate TTLs**: Posts = 1 hour, sessions = 30 minutes
+- **Monitor cache hit ratios**: Aim for >80% on critical paths
+- **Use consistent cache keys**: `user_prefs:{user_id}`, not `userprefs{id}`
+- **Handle cache failures gracefully**: App should work even if cache is down
+- **Warm critical caches**: Pre-populate high-profile users posts
+
+## Don't ❌
+
+- **Cache user-specific data globally**: Don't put user preferences in CDN
+- **Ignore cache stampede**: Popular endpoints need protection
+- **Cache sensitive information**: PII, sensitive documents, etc.
+- **Cache everything**: Caching rarely-accessed data wastes memory
+
+<!--end_slide-->
+
+Summary
+---
+<!--column_layout: [1,1]-->
+<!--column: 0-->
+# Start simple
+
+- Browser cache + CDN covers 80% of performance gains
+- Add app cache when database becomes the bottleneck
+- Add edge cache when distributing API responses globally
+- Don't over-engineer early
+
+## Measure everything  
+
+- You can't optimize what you don't measure
+- Cache hit ratios matter more than cache size
+- Monitor P95/P99 response times, not just averages
+
+<!--column: 1-->
+# Layer strategically
+
+- Each cache serves different needs and timeframes
+- Static assets → CDN (long TTL)
+- API responses → Edge cache (medium TTL)  
+- Expensive computations → App cache (short TTL)
+
+## Invalidate based on needs
+
+- TTL-based is simple but can serve stale data
+- Event-based is complex but keeps data fresh
+- Have a manual override for emergencies
+
+<!--end_slide-->
+Questions?
+---
+
+# Citations
+
+1. [Web performance affects sales](https://glinden.blogspot.com/2006/12/slides-from-my-talk-at-stanford.html)
+2. [Cache Collapse/Request Coalescing](https://www.fastly.com/documentation/guides/concepts/edge-state/cache/request-collapsing/)
+
+## Resources for your caching journey
+
+- [Redis Documentation](https://redis.io/docs/) - Comprehensive guide
+- [Cloudflare Cache Docs](https://developers.cloudflare.com/cache/) - CDN best practices
+- [Varnish Book](https://book.varnish-software.com/) - Advanced HTTP caching
+- [High Performance Browser Networking](https://hpbn.co/) - Free online book
+<!--end_slide-->
+Connect with me :)
+---
+
+<!--column_layout: [1,1]-->
+<!--column: 0-->
+Me:
+![My QR Code](../assets//gvasquez-qr-code.png)
+<!--column: 1-->
+PHL Code Club:
+![PHL Code Club QR Code](../assets/code-club-qr-code.png)
