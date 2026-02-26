@@ -1,3 +1,0 @@
-[submodule "databases/example"]
-	path = databases/example
-	url = git@github.com:GV14982/launchpad-db.git
