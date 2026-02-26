@@ -84,9 +84,9 @@ At their core, _Key-Value Stores_ are no different than HashMaps
 or Dictionaries. They map a key to a value, and nothing more. This makes lookups
 _**super**_ fast, but the lookup constraint isn't useful on complex data.
 
-You generally see these used as in memory application caches, such as Redis or
-Memcached. However, they can also be used for very performant simple sorage such
-as etcd which powers Kubernetes.
+You generally see these used as in memory application caches, such as `Redis` or
+`Memcached`. However, they can also be used for very performant simple sorage such
+as `etcd` which powers Kubernetes.
 
 <!--end_slide-->
 Relational Databases
