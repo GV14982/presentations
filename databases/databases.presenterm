@@ -1,0 +1,150 @@
+---
+theme:
+    name: catppuccin-macchiato
+    override:
+        slide_title:
+          padding_bottom: 0
+          padding_top: 0
+        code:
+            theme_name: Catppuccin-macchiato
+---
+
+```bash +exec_replace +no_background
+figlet -f standard "ARE YOU" | lolcat -f -S 420
+figlet -f standard "BASED?" | lolcat -f -S 420
+```
+<!-- end_slide-->
+echo $(whoami)
+--
+<!--column_layout: [5, 4]-->
+<!--column: 0-->
+- Principle Software Engineer
+- Co-founder and Chief Terminal Nerd @ PHL Code Club 󰍹
+
+![image:width:100%](../assets/phl-code-lg.png)
+<!--column: 1-->
+Here is me with me cat, Fritzy =3
+![image:w:100%](../assets/photo.jpg)
+<!--end_slide-->
+Setting Expectations
+---
+
+What this is:
+
+- An overview of various database paradigms and their uses
+- A look at some production headaches you might have with your database
+- Some time for me to yap about technology :D
+
+What this isn't:
+
+- An exhastive list of databases
+- A full deep dive into database architectures and subsystems (But I'm happy to
+come back and talk about that!)
+<!--end_slide-->
+Overview
+---
+
+Topics we will cover:
+
+- What is a database?
+- Some key database paradigms, with strengths and weaknesses
+  - Key-Value
+  - Relational
+  - Document
+  - Fulltext Search
+- Exploring some databases inside Docker
+
+<!--end_slide-->
+What Is a Database?
+---
+
+Who can tell me what a database is? What are the used for?
+<!--pause-->
+It's an organized set of data usually stored on disk. This data is often managed
+by a `Database Management System` or `DBMS`. Generally speaking the data is stored
+in a manner that makes retrieval and manipulation as efficient as possible.
+
+<!--end_slide-->
+Database Paradigms
+---
+
+What do I mean when I say a _"Database Paradigm"_?
+<!--pause-->
+Data can take many shapes. It might be a social network, a blog, or telemetry data.
+We want to store and query our data in a way that matches the shape of the data.
+
+<!--end_slide-->
+Key-Value Stores
+---
+
+Can anyone give me an example of a _Key-Value Store_?
+<!--pause-->
+
+At their core, _Key-Value Stores_ are no different than HashMaps
+or Dictionaries. They map a key to a value, and nothing more. This makes lookups
+_**super**_ fast, but the lookup constraint isn't useful on complex data.
+
+You generally see these used as in memory application caches, such as Redis or
+Memcached. However, they can also be used for very performant simple sorage such
+as etcd which powers Kubernetes.
+
+<!--end_slide-->
+Relational Databases
+---
+
+Can anyone give me an example of a _Relational Database_?
+<!--pause-->
+
+_Relational Databases_ are defined by structured sets of rows and columns called
+tables. These tables have strict data schemas that tell you what data types they
+can hold. They also allow for creating relationships between columns of data which
+allow you to _join_ tables together efficiently.
+
+Common Relational Databases are `PostgreSQL`, `MySQL`, and `SQLite`. You may also
+come across "Enterprise" databases such as `OracleDB` and `Microsoft SQL Server`.
+<!--end_slide-->
+Document Databases
+---
+
+Can anyone give me an example of a _Document Database_?
+<!--pause-->
+
+_Document Databases_ are heirarchical sets of key-value pairs, similar to a
+key-value store, but they allow for nesting documents and support more complex datatypes.
+
+One big feature of most _Document Databases_ is that they _schemaless_, meaning
+the data can be any shape when you store it.
+
+Examples of _Document Databases_ include `MongoDB` and `CouchDB`.
+
+<!--end_slide-->
+Full Text Search Engines
+---
+
+Can anyone give me an example of a _Full Text Search Engine_?
+<!--pause-->
+_Fulltext Search Engines_ ingest data from other sources and index it in such
+a way that makes searching text (hence the name) and ranking results fast and
+efficient.
+
+These are often _secondary_ to a primary database, such as a Relational or Document
+DB.
+
+Some examples of _Fulltext Search Engines_ are `ElasticSearch`, `OpenSearch`, and `Typesense`.
+<!--end_slide-->
+Let's Dig In
+---
+
+You can find a git repo with a small docker compose setup to play with here:
+
+[repo](https://github.com/gv14982/launchpad-db)
+<!--end_slide-->
+echo $(which gvasquez)
+--
+<!--column_layout: [1,1]-->
+<!--column: 0-->
+[My website!](https://gvasquez.dev/)
+![image:width:100%](../assets/gvasquez-qr-code.png)
+<!--column: 1-->
+[PHL Code Club](https://phlcode.club/)
+![image:width:100%](../assets/code-club-qr-code.png)
