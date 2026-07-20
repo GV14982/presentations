@@ -6,7 +6,6 @@ theme:
 
 ```bash +exec_replace +no_background
 figlet -c -f starwars Vim Motions | lolcat -f -S 69
-printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' '—' | lolcat -f -S 666
 ```
 
 ```bash +exec_replace +no_background

@@ -3,10 +3,8 @@ theme:
     name: catppuccin-macchiato
 ---
 ```bash +exec_replace +no_background
-figlet -f starwars Gleam | lolcat -f -S 69
-printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' '—' | lolcat -f -S 666
+figlet -w 60 -f starwars Gleam | lolcat -f -S 69
 ```
-<!--font_size: 4-->
 <!--column_layout: [2, 5, 2]-->
 <!--column: 0-->
 <!--new_lines: 3-->
