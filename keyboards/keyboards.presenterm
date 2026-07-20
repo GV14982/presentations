@@ -1,0 +1,174 @@
+---
+theme:
+    name: catppuccin-macchiato
+    override:
+        slide_title:
+          padding_bottom: 0
+          padding_top: 0
+        code:
+            theme_name: Catppuccin-macchiato
+---
+
+```bash +exec_replace +no_background
+figlet -f big "Mo' Keys" | lolcat -f -S 420
+figlet -f big "Mo' Problems" | lolcat -f -S 420
+```
+<!-- end_slide-->
+echo $(whoami)
+--
+<!--column_layout: [5, 4]-->
+<!--column: 0-->
+- Principle Software Engineer
+- Keyboard and Ergonomics Enthusiast
+- Co-founder and Chief Terminal Nerd @ PHL Code Club 󰍹
+
+![image:width:100%](../assets/phl-code-lg.png)
+<!--column: 1-->
+Here is me with me cat, Fritzy =3
+![image:w:100%](../assets/photo.jpg)
+<!--end_slide-->
+A Tragedy In 7 Parts
+---
+
+We are going to take a trip down memory lane and into the depths of HID _hell_.
+
+1. The Beginning
+2. Fitting In
+3. A Discovery
+4. Performative Measures
+5. Preventative Measures
+6. Finding Home
+7. Explorations and Tinkering
+
+<!--end_slide-->
+The Beginning: Meandering the Membrane
+---
+
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+Like most people, I started with a _membrane keyboard_. Something like this:
+![Membrane Keyboard](./membrane.jpg)
+<!--column: 1-->
+Or as a developer you might recognize this:
+![Macbook Keyboard](./macbook-keyboard.jpg)
+<!--reset_layout-->
+If you were really lucky you might have had a _pre_ Lenovo Thinkpad...
+<!--end_slide-->
+Fitting In: The Gaming and RGB Era
+---
+
+Like many teens and young adults in the 21st century, I like video games.
+I made many friends playing video games, and I had keyboards made for video games:
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+![Logitech G710](./g710.jpg)
+<!--column: 1-->
+![Keychron K2](./keychron.jpg)
+
+<!--end_slide-->
+A Discovery: You Can CHANGE PARTS?
+---
+
+The Keychron K2 introduced me to the world of customizing mechanical keyboards.
+I jumped straight in building over a dozen different keyboards of varying
+shapes, sizes, and colors. I spent time customizing the feel, the look and the sound.
+
+There are many keyboards like them, but these are mine.
+
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+![Keyboard Shelf 1](./keyboard-shelf1.jpg)
+<!--column: 1-->
+![Keyboard Shelf 2](./keyboard-shelf2.jpg)
+
+<!--end_slide-->
+Performative Measures: Improving Ergonomics (But Not Really)
+---
+
+As I found myself spending more time at my keyboard I decided to take preventative
+measures and start trying out more ergonomic keyboards. I landed on a Planck.
+
+<!--column_layout: [2, 3]-->
+<!--column: 0-->
+Contrary to my belief though, this was _worse_ than the other keyboards!
+My wrists were bent, my hands were flat, and my shoulders scrunched.
+
+<!--column: 1-->
+![Planck](./planck.jpg)
+
+<!--end_slide-->
+Preventative Measures: Let's Do This Right
+---
+
+Having had a rough experience with the Planck I decided to do some actual research.
+This is where I came across _split_ keyboards.
+
+<!--column_layout: [2, 3]-->
+<!--column: 0-->
+Split keyboards allow you to angle your wrists and arms, and relax you shoulders
+to make typing a breeze. Add in a tenting kit to reduce wrist rotation and you
+have a recipe for success.
+
+<!--column: 1-->
+![Corne](./corne.jpg)
+
+<!--end_slide-->
+Finding Home: More Specifically, The Home Row
+---
+
+My current keyboard and the one I have spent the longest time on is this Ferris
+Sweep. It has just 34 keys! However, I can still accomplish all the same tasks
+using various firmware tricks such as _layers_, _mod tap_, and _tap hold_.
+
+<!--column_layout: [2, 3]-->
+<!--column: 0-->
+This allows me to types with very little hand movement, allowing me to keep my
+fingers on the home row and stay in a comfortable position.
+
+<!--column: 1-->
+![Ferris Sweep](./sweep.jpg)
+
+<!--end_slide-->
+Exploration and Tinkering
+---
+
+I am still looking for ways to push the envelope and learn how I can better customize
+how I interface with my machines.
+
+<!--column_layout: [7, 6]-->
+<!--column: 0-->
+One such experiment I tried was the _CharaChorder_. It uses "3D" switches (Akin
+to joysticks), allow each finger to have access to 5 separate inputs without
+moving your hand, just your fingers.
+<!--column: 1-->
+![CharaChorder](./cc2.png)
+
+<!--reset_layout-->
+It also supports _chorded entry_ where you
+input a set of characters all at once and an algorithm on the microcontroller expands that
+into a larger input. Think auto completion but faster.
+
+<!--end_slide-->
+Exploration and Tinkering
+---
+
+<!--column_layout: [1, 1]-->
+<!--column: 0-->
+Another experiment I would like to try is using a _Svalboard_. This input device
+(I hesitate to even call it a keyboard) is based on the _DataHand_ from the 90's.
+
+It takes ergonomics and customization to the limit by allowing most parts to be
+adjusted to fit your exact anatomy.
+
+<!--column: 1-->
+![Svalboard](./svalboard.png)
+<!--end_slide-->
+echo $(which gvasquez)
+--
+<!--column_layout: [1,1]-->
+<!--column: 0-->
+[My website!](https://gvasquez.dev/)
+![image:width:100%](../assets/gvasquez-qr-code.png)
+<!--column: 1-->
+[PHL Code Club](https://phlcode.club/)
+![image:width:100%](../assets/code-club-qr-code.png)
