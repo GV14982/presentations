@@ -266,7 +266,7 @@ Vim motions can often be accompanied by a `count` that allows you to do the same
   - Move to the _2nd_ occurrence of the `-` character.
 
 <!--new_lines: 3-->
-![again](again.gif)
+![again:width:100%](again.gif)
 <!--end_slide-->
 
 Operator PLZ
@@ -361,7 +361,7 @@ I hear you on this one. This is where vim emulation plugins come in super handy!
 FIN
 ---
 
-![thanks](thank_you.gif)
+![thanks:width:100%](thank_you.gif)
 
 # Citations
 
